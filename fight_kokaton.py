@@ -231,14 +231,15 @@ def main():
                 return
         for bi, beam in enumerate(beams):
             for bo, bomb in enumerate(bombs):
-                if beam is not None and bomb is not None:
-                    if beam.rct.colliderect(bomb.rct):
-                        beams[bi] = None    # ビーム削除
-                        bombs[bo] = None    # 爆弾削除
-                        explosions.append(Explosion(bomb.rct.center))  # 爆発エフェクトを追加
-                        score.update(screen, 1)  # スコア加算
-                        bird.change_img(6, screen)
-                        pg.display.update()
+                if beam is not None and bomb is None:  # Issue#1 L234~242
+                    continue
+                if beam.rct.colliderect(bomb.rct):
+                    beams[bi] = None    # ビーム削除
+                    bombs[bo] = None    # 爆弾削除
+                    explosions.append(Explosion(bomb.rct.center))  # 爆発エフェクトを追加
+                    score.update(screen, 1)  # スコア加算
+                    bird.change_img(6, screen)
+                    pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]
         beams = [beam for beam in beams if beam is not None]
         explosions = [ex for ex in explosions if ex.life > 0]
