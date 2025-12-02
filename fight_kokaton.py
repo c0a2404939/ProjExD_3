@@ -169,6 +169,46 @@ class Score:
         # 描画
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    """
+    爆発エフェクトを管理するクラス
+    """
+    def __init__(self, xy: tuple[int, int]):
+        # 元画像
+        base_img = pg.image.load("fig/explosion.gif")
+
+        # 上下左右にflipした2枚を保持
+        self.images = [
+            base_img,
+            pg.transform.flip(base_img, True, True)
+        ]
+
+        # 交互に表示するためのインデックス
+        self.index = 0
+
+        # 位置設定
+        self.rct = self.images[0].get_rect()
+        self.rct.center = xy
+
+        # 爆発の寿命（好きな値でOK）
+        self.life = 20
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発アニメの更新・描画
+        """
+        # 寿命が尽きたら何もしない
+        if self.life <= 0:
+            return
+
+        # 寿命を減らす
+        self.life -= 1
+
+        # 画像を交互に切り替え（チラつかない程度の速度）
+        self.index = (self.index + 1) % len(self.images)
+
+        # 描画
+        screen.blit(self.images[self.index], self.rct)
 
 
 
@@ -186,6 +226,7 @@ def main():
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     # beam = None  # ゲーム初期化時にはビームは存在しない
     beams = []   # beamの複数管理
+    explosions = []   # 爆発エフェクトの管理
     clock = pg.time.Clock()
     tmr = 0
     score = Score()
@@ -216,11 +257,13 @@ def main():
                     if beam.rct.colliderect(bomb.rct):
                         beams[bi] = None    # ビーム削除
                         bombs[bo] = None    # 爆弾削除
+                        explosions.append(Explosion(bomb.rct.center))  # 爆発エフェクトを追加
                         score.update(screen, 1)  # スコア加算
                         bird.change_img(6, screen)
                         pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]
         beams = [beam for beam in beams if beam is not None]
+        explosions = [ex for ex in explosions if ex.life > 0]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -228,6 +271,8 @@ def main():
             beam.update(screen)   
         for bomb in bombs:  # 爆弾が存在していたら
             bomb.update(screen)
+        for ex in explosions:
+            ex.update(screen)
         
         score.update(screen)
 
