@@ -140,6 +140,38 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Score:
+    """
+    スコア表示に関するクラス
+    """
+    def __init__(self):
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)  # フォント
+        self.color = (0, 0, 255)  # 色
+        self.value = 0           # スコアの初期値
+
+        # 初期表示用Surface生成
+        self.img = self.fonto.render(f"スコア: {self.value}", True, self.color)
+        self.rct = self.img.get_rect()
+        self.rct.center = (100, 50)
+
+    def update(self, screen: pg.Surface, add_point=0):
+        """
+        スコア更新 & Surface 再生成 & 描画を一括で行う
+        add_point : 加算したいスコア（0なら描画だけ）
+        """
+        # スコア加算
+        self.value += add_point
+
+        # Surface更新
+        txt = f"スコア: {self.value}"
+        self.img = self.fonto.render(txt, True, self.color)
+
+        # 描画
+        screen.blit(self.img, self.rct)
+
+
+
+
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -155,6 +187,8 @@ def main():
     beam = None  # ゲーム初期化時にはビームは存在しない
     clock = pg.time.Clock()
     tmr = 0
+    score = Score()
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -168,6 +202,9 @@ def main():
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)
+                fonto = pg.font.Font(None, 80)
+                txt = fonto.render("Game Over", True, (255, 0, 0))
+                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])                  
                 pg.display.update()
                 time.sleep(1)
                 return
@@ -177,6 +214,7 @@ def main():
                     # ビームが爆弾に当たったら，爆弾とビームを消す
                     beam = None
                     bombs[b] = None
+                    score.update(screen, 1)  # スコア加算
                     bird.change_img(6, screen)
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb  is not None]
@@ -187,6 +225,10 @@ def main():
             beam.update(screen)   
         for bomb in bombs:  # 爆弾が存在していたら
             bomb.update(screen)
+        
+        score.update(screen)
+
+
         pg.display.update()
         tmr += 1
         clock.tick(50)
