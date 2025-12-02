@@ -152,63 +152,41 @@ class Score:
         # 初期表示用Surface生成
         self.img = self.fonto.render(f"スコア: {self.value}", True, self.color)
         self.rct = self.img.get_rect()
-        self.rct.center = (100, 50)
+        self.rct.center = (100, HEIGHT - 50)
 
     def update(self, screen: pg.Surface, add_point=0):
         """
         スコア更新 & Surface 再生成 & 描画を一括で行う
         add_point : 加算したいスコア（0なら描画だけ）
         """
-        # スコア加算
-        self.value += add_point
-
-        # Surface更新
+        # スコア加算      
+        self.value += add_point  
         txt = f"スコア: {self.value}"
-        self.img = self.fonto.render(txt, True, self.color)
-
-        # 描画
-        screen.blit(self.img, self.rct)
+        self.img = self.fonto.render(txt, True, self.color)  # Surface更新      
+        screen.blit(self.img, self.rct)  # 描画
 
 class Explosion:
     """
     爆発エフェクトを管理するクラス
     """
     def __init__(self, xy: tuple[int, int]):
-        # 元画像
-        base_img = pg.image.load("fig/explosion.gif")
-
-        # 上下左右にflipした2枚を保持
-        self.images = [
-            base_img,
-            pg.transform.flip(base_img, True, True)
-        ]
-
-        # 交互に表示するためのインデックス
-        self.index = 0
-
+        base_img = pg.image.load("fig/explosion.gif")  # 元画像
+        self.images = [base_img, pg.transform.flip(base_img, True, True)]  # 上下左右にflipした2枚を保持
+        self.index = 0  # 交互に表示するためのインデックス
         # 位置設定
         self.rct = self.images[0].get_rect()
-        self.rct.center = xy
-
-        # 爆発の寿命（好きな値でOK）
-        self.life = 20
+        self.rct.center = xy  
+        self.life = 20  # 爆発の寿命
 
     def update(self, screen: pg.Surface):
         """
         爆発アニメの更新・描画
         """
-        # 寿命が尽きたら何もしない
-        if self.life <= 0:
+        if self.life <= 0:  # 寿命が尽きたら何もしない
             return
-
-        # 寿命を減らす
-        self.life -= 1
-
-        # 画像を交互に切り替え（チラつかない程度の速度）
-        self.index = (self.index + 1) % len(self.images)
-
-        # 描画
-        screen.blit(self.images[self.index], self.rct)
+        self.life -= 1  # 寿命を減らす
+        self.index = (self.index + 1) % len(self.images)  # 画像を交互に切り替え
+        screen.blit(self.images[self.index], self.rct)  # 描画
 
 
 
@@ -275,8 +253,6 @@ def main():
             ex.update(screen)
         
         score.update(screen)
-
-
         pg.display.update()
         tmr += 1
         clock.tick(50)
